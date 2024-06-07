@@ -8,7 +8,6 @@
 #define OLED_SCL_PIN 22
 #define OLED_SDA_PIN 21
 U8X8_SH1106_128X64_NONAME_HW_I2C u8x8(/* reset=*/U8X8_PIN_NONE, OLED_SCL_PIN, OLED_SDA_PIN);
-
 #define U8LOG_WIDTH 16
 #define U8LOG_HEIGHT 8
 uint8_t u8log_buffer[U8LOG_WIDTH * U8LOG_HEIGHT];
@@ -23,10 +22,8 @@ char keys[ROWS][COLS] = {
   { '7', '8', '9', 'C' },
   { '*', '0', '#', 'D' }
 };
-
 uint8_t rowPins[ROWS] = { 32, 33, 25, 26 };  // Pins connected to R1, R2, R3, R4
 uint8_t colPins[COLS] = { 27, 14, 12, 13 };  // Pins connected to C1, C2, C3, C4
-
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
 // Show Enter password screen
@@ -41,6 +38,7 @@ void clearScreen() {
   u8x8.initDisplay();
 }
 
+// Show corresponding menu screen
 int onMenu;
 void showMenu() {
   switch (onMenu) {
@@ -125,6 +123,7 @@ void loop() {
             }
             break;
           case 3:
+            // Change password
             if (key == 'D') {
               onMenu = 1;
               clearScreen();
