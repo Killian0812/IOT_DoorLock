@@ -5,21 +5,21 @@
 
 #define PASSWORD "ABC"
 
-#define buzzer_PIN 18 // Chân GPIO nối với buzzer
+#define buzzer_PIN 18  // Chân GPIO nối với buzzer
 
 // SR04
 #define SR04_TRIG_PIN 23  // Vị trí chân GPIO của ESP32 được nối với Trig của SR04
-#define SR04_ECHO_PIN 22  // Vị trí chân GPIO của ESP32 được nối với Echo của SR04
+#define SR04_ECHO_PIN 5   // Vị trí chân GPIO của ESP32 được nối với Echo của SR04
 
 // Setup Servo
-#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
-int servoPin = 17;
-#elif defined(CONFIG_IDF_TARGET_ESP32C3)
-int servoPin = 7;
-#else
-int servoPin = 18;
-#endif
-Servo myservo;
+// #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+// int servoPin = 17;
+// #elif defined(CONFIG_IDF_TARGET_ESP32C3)
+// int servoPin = 7;
+// #else
+#define servoPin 4
+// #endif
+
 // Setup OLED Screen
 #define OLED_SCL_PIN 22
 #define OLED_SDA_PIN 21
@@ -28,6 +28,11 @@ U8X8_SH1106_128X64_NONAME_HW_I2C u8x8(/* reset=*/U8X8_PIN_NONE, OLED_SCL_PIN, OL
 #define U8LOG_HEIGHT 8
 uint8_t u8log_buffer[U8LOG_WIDTH * U8LOG_HEIGHT];
 U8X8LOG u8x8log;
+
+Servo myservo;
+bool typing, enableAuto = false;
+String s;  // Lưu mật khẩu
+int cnt = 3000;
 
 // Setup Keypad
 const uint8_t ROWS = 4;
@@ -103,13 +108,23 @@ int GetDistance() {
 
 unsigned int distance;  // Khoảng cách từ vật thể tới cảm biến siêu âm
 
-// OpenDoor
-void OpenDoor() {
-  distance = GetDistance();
-  myservo.write(180);
-  if (distance <= 9) {
-    myservo.write(0);
+// Automatic Door
+void autoDoor() {
+  distance = GetDistance(); 
+  myservo.write(0);
+  if (distance <= 20 && distance > 0) {
+    Serial.print(distance);
+    myservo.write(180);
+    delay(2000);
   }
+}
+
+// Open Door
+void openDoor() {
+  myservo.write(0);
+  myservo.write(180);
+  delay(2000);
+  myservo.write(0);
 }
 
 void setup() {
@@ -117,14 +132,14 @@ void setup() {
   // phản hồi thì báo về qua Echo. Vì vậy Trig là chân OUTPUT, còn Echo là chân INPUT
   pinMode(SR04_TRIG_PIN, OUTPUT);
   pinMode(SR04_ECHO_PIN, INPUT);
+  pinMode(buzzer_PIN, OUTPUT);
+
   ESP32PWM::allocateTimer(0);
   ESP32PWM::allocateTimer(1);
   ESP32PWM::allocateTimer(2);
   ESP32PWM::allocateTimer(3);
-  myservo.setPeriodHertz(50);            // standard 50 hz servo
+  myservo.setPeriodHertz(50);  // standard 50 hz servo
   myservo.attach(servoPin, 1000, 2000);
-
-  pinMode(buzzer_PIN, OUTPUT);
 
   Serial.begin(115200);
   Serial.println("Serial connected");
@@ -139,10 +154,8 @@ void setup() {
     showTyping();
 }
 
-bool typing;
-String s;
-
 void loop() {
+  cnt++;
   char key = keypad.getKey();
   if (key != NO_KEY) {
     Serial.println(key);
@@ -158,6 +171,10 @@ void loop() {
           case 1:
             if (key == 'A') {
               /// Open door
+              openDoor();
+              onMenu = 0;
+              clearScreen();
+              setup();
             } else if (key == 'B' && onMenu != 2) {
               onMenu = 2;
               setup();
@@ -173,9 +190,16 @@ void loop() {
           case 2:
             if (key == 'A') {
               /// Automatic
-              OpenDoor();
+              enableAuto = true;
+              onMenu = 0;
+              clearScreen();
+              setup();
             } else if (key == 'B') {
               /// Locked
+              enableAuto = false;
+              onMenu = 0;
+              clearScreen();
+              setup();
             } else if (key == 'D') {
               onMenu = 1;
               clearScreen();
@@ -207,5 +231,8 @@ void loop() {
       } else
         s += key;
     }
-  }
+  } else if (enableAuto && cnt >= 3000) {
+      cnt = 0;
+      autoDoor();
+    }
 }
