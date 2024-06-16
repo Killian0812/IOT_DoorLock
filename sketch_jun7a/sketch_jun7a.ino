@@ -118,7 +118,11 @@ void autoDoor()
 {
   distance = GetDistance();
   myservo.write(0);
+<<<<<<< HEAD
   if (distance <= 7 && distance > 0)
+=======
+  if (distance <= 20 && distance > 0)
+>>>>>>> f057f511e6be755fda461af501c078c5f7a4dbbb
   {
     Serial.print(distance);
     myservo.write(180);
@@ -163,7 +167,11 @@ void setup()
     showTyping();
 }
 
+<<<<<<< HEAD
 int changePasswordPhase = 0;
+=======
+int changePasswordPhase;
+>>>>>>> f057f511e6be755fda461af501c078c5f7a4dbbb
 void handleTyping(char key, bool onChangePassword)
 {
   if (key == '#')
@@ -194,7 +202,10 @@ void handleTyping(char key, bool onChangePassword)
         changePasswordPhase++;
         u8x8log.print("Enter again:\n");
         tmp = s;
+<<<<<<< HEAD
         s="";
+=======
+>>>>>>> f057f511e6be755fda461af501c078c5f7a4dbbb
       }
       else if (changePasswordPhase == 1)
       {
@@ -312,9 +323,17 @@ void loop()
         handleTyping(key, false);
     }
   }
+<<<<<<< HEAD
   else if (enableAuto && cnt >= 1000)
+=======
+  else if (enableAuto && cnt >= 3000)
+>>>>>>> f057f511e6be755fda461af501c078c5f7a4dbbb
   {
     cnt = 0;
     autoDoor();
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> f057f511e6be755fda461af501c078c5f7a4dbbb
