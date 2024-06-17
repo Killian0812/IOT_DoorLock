@@ -157,46 +157,46 @@ void setup()
   u8x8.setFont(u8x8_font_chroma48medium8_r);
   u8x8log.begin(u8x8, U8LOG_WIDTH, U8LOG_HEIGHT, u8log_buffer);
   u8x8log.setRedrawMode(1);
-  if (onMenu)
+  if (onMenu)  // Render menu
     showMenu();
-  else
+  else         // Render nhập mật khẩu
     showTyping();
 }
 
-int changePasswordPhase = 0;
-void handleTyping(char key, bool onChangePassword)
+int changePasswordPhase = 0; // Xác định phase đổi mật khẩu
+void handleTyping(char key, bool onChangePassword) // Hàm xử lý ký tự nhập vào
 {
-  if (key == '#')
+  if (key == '#') // Submit
   {
     u8x8log.print("\n");
-    if (!onChangePassword)
+    if (!onChangePassword) // Nếu đang không trong chế độ đổi mk
     {
-      if (s == PASSWORD)
+      if (s == PASSWORD) // Match password
       {
-        u8x8log.print("SUCCESS\n");
+        u8x8log.print("SUCCESS\n"); 
         Serial.print("SUCCESS\n");
-        onMenu = 1;
-        s = "";
-        setup();
+        onMenu = 1; // Mở menu 1
+        s = ""; 
+        setup(); // render lại menu
       }
-      else
+      else // Not match
       {
         u8x8log.print("WRONG PASSWORD\n");
         Serial.print("FAILED\n");
         s = "";
-        setup();
+        setup(); 
       }
     }
     else
     {
-      if (changePasswordPhase == 0)
+      if (changePasswordPhase == 0) // phase 0: nhập mật khẩu mới
       {
         changePasswordPhase++;
         u8x8log.print("Enter again:\n");
         tmp = s;
         s="";
       }
-      else if (changePasswordPhase == 1)
+      else if (changePasswordPhase == 1) // phase 1: xác nhận mật khẩu mới
       {
         if (s == tmp) 
         {
@@ -214,15 +214,15 @@ void handleTyping(char key, bool onChangePassword)
       }
     }
   }
-  else if (key == '*')
+  else if (key == '*') // clear input
   {
     typing = false;
     s = "";
     setup();
   }
-  else
+  else // Ký tự bình thường
   {
-    u8x8log.print("*");
+    u8x8log.print("*"); 
     s += key;
   }
 }
@@ -231,24 +231,24 @@ void loop()
 {
   cnt++;
   char key = keypad.getKey();
-  if (key != NO_KEY)
+  if (key != NO_KEY) // Nếu ký tự hợp lệ
   {
-    Serial.println(key);
-    beep();
+    Serial.println(key); 
+    beep(); 
 
-    if (!typing)
+    if (!typing) // Bắt đầu nhập
     {
-      typing = true;
-      s = "";
+      typing = true; 
+      s = "";   // Reset xâu
     }
-    if (typing)
+    if (typing) // Đang nhập
     {
-      if (onMenu)
+      if (onMenu) // Đang ở menu
       {
         switch (onMenu)
         {
-        case 1:
-          if (key == 'A')
+        case 1: // Menu 1
+          if (key == 'A') 
           {
             /// Open door
             openDoor();
@@ -256,25 +256,25 @@ void loop()
             clearScreen();
             setup();
           }
-          else if (key == 'B' && onMenu != 2)
+          else if (key == 'B' && onMenu != 2) // Chuyển menu 2
           {
             onMenu = 2;
             setup();
           }
-          else if (key == 'C' && onMenu != 3)
+          else if (key == 'C' && onMenu != 3) // Chuyển menu 3
           {
             onMenu = 3;
             setup();
           }
-          else if (key == 'D')
+          else if (key == 'D') // Quay lại
           {
             onMenu = 0;
             clearScreen();
             setup();
           }
           break;
-        case 2:
-          if (key == 'A')
+        case 2: // Menu 2
+          if (key == 'A') // Chế độ cửa tự động
           {
             /// Automatic
             enableAuto = true;
@@ -282,7 +282,7 @@ void loop()
             clearScreen();
             setup();
           }
-          else if (key == 'B')
+          else if (key == 'B') // Chế độ cần mật khẩu
           {
             /// Locked
             enableAuto = false;
@@ -290,16 +290,16 @@ void loop()
             clearScreen();
             setup();
           }
-          else if (key == 'D')
+          else if (key == 'D') // Quay lại
           {
             onMenu = 1;
             clearScreen();
             setup();
           }
           break;
-        case 3:
-          handleTyping(key, true);
-          if (key == 'D')
+        case 3: // Menu 3
+          handleTyping(key, true); // Xử lý ký tự nhập
+          if (key == 'D') // Quay lại
           {
             onMenu = 1;
             clearScreen();
@@ -315,6 +315,6 @@ void loop()
   else if (enableAuto && cnt >= 1000)
   {
     cnt = 0;
-    autoDoor();
+    autoDoor(); // Kiểm tra khoảng cách
   }
 }
